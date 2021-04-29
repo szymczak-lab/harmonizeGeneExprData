@@ -1,6 +1,6 @@
 Package: harmonizeGeneExprData
 Type: Package
-Title: Harmonization of gene expression data from GEO or ArrayExpress
+Title: Harmonization of gene expression data from GEO and ArrayExpress
 Authors@R: person("Silke", "Szymczak", email = "silke.szymczak@uni-luebeck.de",
   role = c("aut", "cre"))
 Version: 0.0.0.9000
@@ -17,5 +17,7 @@ Imports:
     BiocGenerics,
     filesstrings,
     GEOquery,
+    limma,
     rio,
-    stringr
+    stringr,
+    SummarizedExperiment
