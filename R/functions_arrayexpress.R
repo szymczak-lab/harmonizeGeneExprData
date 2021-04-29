@@ -47,3 +47,37 @@ extract_pheno_data_AE <- function(
 
   return(sdrf)
 }
+
+## platform can be extracted from xml file at
+#https://www.ebi.ac.uk/arrayexpress/xml/v3/experiments/E-MTAB-6556/protocols
+#' Extract meta data from ArrayExpress
+#'
+#' Download the IDF file from ArrayExpress and extract some of the information
+#'
+#' @keywords internal
+extract_meta_data_AE <- function(
+  ae.id,
+  temp.dir = temp.dir) {
+
+  info.ae = download_files_AE(
+    ae.id = ae.id,
+    temp.dir = temp.dir)
+
+  idf = ArrayExpress:::readExperimentData(
+    idf = info.ae$idf,
+    path = temp.dir)
+
+  if (idf@pubMedIds != "") {
+    pubmed = idf@pubMedIds
+  } else {
+    pubmed = NULL
+  }
+  meta.data.l = list(ae.id = ae.id,
+                     contact_institute = idf@lab,
+                     contact_email = idf@contact,
+                     pubmed_id = NULL)
+
+  return(meta.data.l)
+}
+
+

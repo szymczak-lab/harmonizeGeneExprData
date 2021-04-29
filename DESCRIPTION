@@ -17,4 +17,5 @@ Imports:
     BiocGenerics,
     filesstrings,
     GEOquery,
-    rio
+    rio,
+    stringr

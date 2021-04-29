@@ -76,3 +76,57 @@ extract_pheno_data_GEO <- function(
     temp.dir = temp.dir)
   return(Biobase::pData(eset))
 }
+
+
+#' Extract meta data from GEO
+#'
+#' Extract platform information and information from the experimentData()
+#' slot from the ExpressionSet of a GEO study
+#'
+#' @keywords internal
+extract_meta_data_GEO <- function(
+  gse,
+  temp.dir = tempdir(),
+  platform = NULL) {
+
+  eset = wrapper_getGEO(
+    gse = gse,
+    GSEMatrix = TRUE,
+    AnnotGPL = FALSE,
+    getGPL = FALSE,
+    platform = platform,
+    temp.dir = temp.dir)
+  if (is.null(platform)) platform = unique(eset$platform_id)
+  gpl = GEOquery::getGEO(platform)
+
+  temp = Biobase::experimentData(eset)@other
+  meta.data.l = list(
+    gse = gse,
+    contact_institute = temp$contact_institute,
+    contact_laboratory = temp$contact_laboratory,
+    contact_email = temp$contact_email,
+    submission_date = temp$submission_date,
+    last_update_date = temp$last_update_date,
+    type = temp$type,
+    platform_id = temp$platform_id,
+    platform_name = gpl@header$title,
+    pubmed_id = temp$pubmed_id,
+    sra_id = stringr::str_extract(string = temp$relation,
+                         pattern = "SRP[0-9]*"))
+
+  meta.data.l$technology = ifelse(
+    grepl("sequencing", meta.data.l$type),
+    "rnaseq",
+    ifelse(
+      grepl("agilent",
+            meta.data.l$platform_name,
+            ignore.case = TRUE),
+      "array.agilent",
+      ifelse(
+        grepl("illumina",
+              meta.data.l$platform_name,
+              ignore.case = TRUE),
+        "array.illumina", "array.affy")))
+
+  return(meta.data.l)
+}
