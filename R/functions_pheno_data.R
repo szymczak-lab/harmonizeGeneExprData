@@ -358,7 +358,24 @@ extract_subject_id <- function(id,
 check_subject_info <- function(pheno,
                                cols.subject) {
 
-  col.id = grepl("_id$", colnames(pheno))
+  col.id = grep("_id$", colnames(pheno), value = TRUE)
+  col.id = setdiff(col.id, "platform_id")
+  if (length(col.id) == 0) {
+    stop("no subject identifier column found")
+  }
+  if (length(col.id) > 1) {
+    stop("more than one subject identifier column found")
+  }
+
+  cols.miss = setdiff(
+    cols.subject,
+    colnames(pheno))
+  if (length(cols.miss) > 0) {
+    stop(paste(
+      "some subject specific columns missing:",
+      paste(cols.miss, collapse = ",")))
+  }
+
   ids = unique(pheno[, col.id])
   if (length(ids) < nrow(pheno)) {
     cols.use = unlist(sapply(cols.subject, function(x) {

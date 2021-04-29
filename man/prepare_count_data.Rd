@@ -11,7 +11,8 @@ prepare_count_data(counts)
 samples in columns}
 }
 \value{
-[list] assays (counts, voom and voom.weights) to be used in XXX
+[list] assays (counts, voom and voom.weights) to be used in
+\code{\link{make_se_object}}
 }
 \description{
 Remove genes with only zero counts across samples and perform voom

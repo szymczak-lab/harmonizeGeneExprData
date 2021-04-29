@@ -6,7 +6,8 @@
 #' @param counts [data.frame or matrix] raw counts with genes in rows and
 #' samples in columns
 #'
-#' @return [list] assays (counts, voom and voom.weights) to be used in XXX
+#' @return [list] assays (counts, voom and voom.weights) to be used in
+#' \code{\link{make_se_object}}
 #' @export
 prepare_count_data <- function(counts) {
 
@@ -22,7 +23,7 @@ prepare_count_data <- function(counts) {
   dimnames(weights) = dimnames(v$E)
   assays = list(
     counts = counts,
-    voom = v$E,
+    expr.voom = v$E,
     voom.weights = weights)
 
   return(assays)
