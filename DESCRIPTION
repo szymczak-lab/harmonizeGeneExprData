@@ -15,5 +15,6 @@ Imports:
     ArrayExpress,
     Biobase,
     BiocGenerics,
+    filesstrings,
     GEOquery,
     rio

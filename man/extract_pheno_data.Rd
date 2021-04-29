@@ -25,6 +25,6 @@ Extract phenotype data from GEO or ArrayExpress depending on study
 identifier.
 }
 \details{
-All phenotype data available at GEO or AE is returned without any
+All phenotype data available at GEO or ArrayExpress is returned without any
 modifications.
 }
