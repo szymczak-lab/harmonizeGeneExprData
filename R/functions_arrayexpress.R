@@ -63,21 +63,47 @@ extract_meta_data_AE <- function(
     ae.id = ae.id,
     temp.dir = temp.dir)
 
-  idf = ArrayExpress:::readExperimentData(
-    idf = info.ae$idf,
-    path = temp.dir)
+  idf = scan(
+    file.path(temp.dir, info.ae$idf),
+    character(),
+    sep = "\n",
+    encoding = "UTF-8")
 
-  if (idf@pubMedIds != "") {
-    pubmed = idf@pubMedIds
-  } else {
-    pubmed = NULL
-  }
-  meta.data.l = list(ae.id = ae.id,
-                     contact_institute = idf@lab,
-                     contact_email = idf@contact,
-                     pubmed_id = NULL)
+  meta.data.l = list(
+    study_id = ae.id,
+    contact_institute = extract_info_from_idf(
+      idf = idf,
+      label = "Person Affiliation"),
+    contact_email = extract_info_from_idf(
+      idf = idf,
+      label = "Person Email"),
+    date = extract_info_from_idf(
+      idf = idf,
+      label = "Public Release Date"),
+    platform_name = extract_info_from_idf(
+      idf = idf,
+      label = "Protocol Hardware"),
+    pubmed_id = extract_info_from_idf(
+      idf = idf,
+      label = "PubMed ID"))
 
   return(meta.data.l)
 }
 
 
+#' Extract information from IDF
+#'
+#' Extract specific information from IDF file
+#'
+#' @keywords internal
+extract_info_from_idf <- function(idf, label) {
+  l = unlist(strsplit(
+    grep(label, idf, value = TRUE),
+    "\t"))
+  l = l[l != ""]
+  final = ifelse(
+    is.null(l), NA,
+    ifelse(length(l) == 1, NA,
+           paste(l[-1], collapse = "|")))
+  return(final)
+}

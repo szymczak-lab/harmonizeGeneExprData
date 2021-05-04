@@ -42,7 +42,8 @@ by variable names given in info.var}
 Extend original phenotype data by new variables with harmonized names and
 values including sample and subject identifiers. Values of numeric variables
 are converted to numeric. Values of character variables are mapped to
-pre-specified values. If a study contains only patients of a specific
+pre-specified values. For time variables numbers are extracted and
+converted to days. If a study contains only patients of a specific
 disease, this variable can be set globally.
 }
 \details{
@@ -50,7 +51,7 @@ info.var contains information about all variables that should be harmonized
 within a project, i.e. across studies. The list needs to be named by the
 names of the harmonized variables and each element contains:
 \itemize{
-\item type: either "character" or "numeric"
+\item type: either "character", "numeric" or "time"
 \item values: list named by final value and original values that should be
 mapped (can include regular expressions)
 }

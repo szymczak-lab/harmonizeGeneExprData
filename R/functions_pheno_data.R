@@ -28,9 +28,9 @@ extract_pheno_data <- function(
       temp.dir = temp.dir,
       platform = platform)
   } else if (grepl("^E-MTAB", study.id)) {
-#    pheno.all = extract_pheno_data_AE(
-#      ae.id = study.id,
-#      temp.dir = temp.dir)
+   pheno.all = extract_pheno_data_AE(
+     ae.id = study.id,
+     temp.dir = temp.dir)
   } else {
     stop(paste(study.id, "unknown! Use valid GEO or ArrayExpress study
                identifier starting with GSE or E-MTAB"))
@@ -76,14 +76,15 @@ extract_pheno_data <- function(
 #' Extend original phenotype data by new variables with harmonized names and
 #' values including sample and subject identifiers. Values of numeric variables
 #' are converted to numeric. Values of character variables are mapped to
-#' pre-specified values. If a study contains only patients of a specific
+#' pre-specified values. For time variables numbers are extracted and
+#' converted to days. If a study contains only patients of a specific
 #' disease, this variable can be set globally.
 #'
 #' info.var contains information about all variables that should be harmonized
 #' within a project, i.e. across studies. The list needs to be named by the
 #' names of the harmonized variables and each element contains:
 #' \itemize{
-#' \item type: either "character" or "numeric"
+#' \item type: either "character", "numeric" or "time"
 #' \item values: list named by final value and original values that should be
 #' mapped (can include regular expressions)
 #' }
@@ -139,13 +140,23 @@ harmonize_pheno_data <- function(
   ## harmonize each variable
   new = lapply(seq_len(length(cols.use)), function(i) {
     col = cols.use[i]
+    print("===========================================")
     print(col)
     x = pheno[, col]
     info = info.var[[names(cols.use)[i]]]
     if (info$type == "numeric") {
-      x.new = convert_numeric_variable(x = x)
+      x.new = convert_numeric_variable(
+        x = x)
     } else if (info$type == "character") {
-      x.new = map_variable(
+      if (!is.null(info$values)) {
+        x.new = map_variable(
+          x = x,
+          values = info$values)
+      } else {
+        x.new = tolower(gsub(" ", "_", x))
+      }
+    } else if (info$type == "time") {
+      x.new = convert_time_variable(
         x = x,
         values = info$values)
     } else {
@@ -232,8 +243,10 @@ map_variable <- function(
   ## check that mapping is unique
   sum = apply(info.map, 1, sum)
   if (all(sum == 0)) {
-    print("none of the values could be mapped")
-    return(rep(NA, length(x)))
+    print("none of the values could be mapped:")
+    print(sort(unique(x)))
+    stop()
+    #return(rep(NA, length(x)))
   }
   if (any(sum == 0, na.rm = TRUE)) {
     print("the following values were not mapped:")
@@ -242,7 +255,7 @@ map_variable <- function(
   }
   if (any(sum > 1, na.rm = TRUE)) {
     print("the following values were not uniquely mapped:")
-    print(x[which(sum > 1)])
+    print(sort(unique(x[which(sum > 1)])))
     stop()
   }
 
@@ -268,8 +281,12 @@ map_variable <- function(
 #' @keywords internal
 convert_numeric_variable <- function(x) {
 
-  x.new = unlist(filesstrings::str_extract_numbers(
-    string = x,
+  if (is.numeric(x)) return(x)
+
+  x.new = rep(NA, length(x))
+  ind.not.na = which(!is.na(x))
+  x.new[ind.not.na] = unlist(filesstrings::str_extract_numbers(
+    string = x[ind.not.na],
     decimals = TRUE,
     negs = TRUE,
     leave_as_string = FALSE))
@@ -289,6 +306,59 @@ convert_numeric_variable <- function(x) {
   return(x.new)
 }
 
+
+#' Convert variable to time in days
+#'
+#' Extract numbers if necessary, convert to numeric and transform to days.
+#'
+#' @keywords internal
+convert_time_variable <- function(
+  x,
+  values) {
+
+  ## replace baseline with 0
+  if (!is.null(values)) {
+    for (i in seq_len(length(values))) {
+      x = gsub(
+        paste(values[[i]], collapse = "|"),
+        names(values)[i],
+        x,
+        ignore.case = TRUE)
+    }
+  }
+
+  ## extract numbers
+  x.num = convert_numeric_variable(x = x)
+
+  ## identify unit
+  units = list(
+#    day = c("day", "d"),
+    week = c("week", "wk", "w"),
+    month = c("month", "m"))
+
+  info.unit = sapply(
+    units,
+    function(u) {
+      base::grepl(paste(u, collapse = "|"), x, ignore.case = TRUE)
+    })
+  info.unit[which(is.na(x)), ] = NA
+
+  ## convert
+  ind.week = which(info.unit[, "week"])
+  x.num[ind.week] = x.num[ind.week] * 7
+  ind.month = which(info.unit[, "month"])
+  x.num[ind.month] = x.num[ind.month] * 30.5
+
+  print(table(x, x.num))
+
+  return(x.num)
+}
+
+
+
+
+
+
 #' Extract sample and subject identifiers
 #'
 #' @keywords internal
@@ -302,8 +372,8 @@ extract_identifier <- function(
     info = pheno[, c("geo_accession", "title")]
     colnames(info) = c("accession", "name")
 
-  } else if ("source.name" %in% colnames(pheno)) { ## AE
-    info = pheno[, c("source.name"), drop = FALSE]
+  } else if ("Source.Name" %in% colnames(pheno)) { ## AE
+    info = pheno[, c("Source.Name"), drop = FALSE]
     colnames(info) = "accession"
   }
 
@@ -385,7 +455,7 @@ check_subject_info <- function(pheno,
         return(x)
       }}))
     for (id in ids) {
-      temp = pheno[pheno[, col.id] == id, cols.use]
+      temp = pheno[pheno[, col.id] == id, cols.use, drop = FALSE]
       if (nrow(unique(temp)) > 1) {
         warning(paste("different characteristics for",
                       "subject", id, "\n"))

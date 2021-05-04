@@ -25,10 +25,10 @@ make_se_object <- function(
   ## checks
   samples.a = colnames(assays[[1]])
   if (nrow(pheno) > length(samples.a)) {
-    warning("some samples not in assays")
+    warning("some samples not in assays\n")
   }
   if (nrow(pheno) < length(samples.a)) {
-    warning("some samples not in pheno")
+    warning("some samples not in pheno\n")
   }
   samples.use = intersect(rownames(pheno),
                           samples.a)
@@ -38,9 +38,6 @@ make_se_object <- function(
 
   genes.a = rownames(assays[[1]])
   if (!is.null(anno)) {
-    if (nrow(anno) > length(genes.a)) {
-      warning("some genes not in assays")
-    }
     if (nrow(anno) < length(genes.a)) {
       warning("some genes not in anno")
     }

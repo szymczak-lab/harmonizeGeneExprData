@@ -100,17 +100,34 @@ extract_meta_data_GEO <- function(
   gpl = GEOquery::getGEO(platform)
 
   temp = Biobase::experimentData(eset)@other
+
+  ## convert dates
+  prev = Sys.getlocale("LC_TIME"); Sys.setlocale("LC_TIME", "C")
+  temp$submission_date = as.Date(
+    x = temp$submission_date,
+    format = c("%b %d %Y"))
+  temp$last_update_date = as.Date(
+    x = temp$last_update_date,
+    format = c("%b %d %Y"))
+  Sys.setlocale("LC_TIME", prev)
+
+  pubmed.id = temp$pubmed_id
+  if (is.null(pubmed.id)) {
+    pubmed.id = NA
+  } else {
+    pubmed.id = gsub("\\n", "|", temp$pubmed_id)
+  }
+
   meta.data.l = list(
-    gse = gse,
+    study_id = gse,
     contact_institute = temp$contact_institute,
-    contact_laboratory = temp$contact_laboratory,
     contact_email = temp$contact_email,
-    submission_date = temp$submission_date,
+    date = temp$submission_date,
     last_update_date = temp$last_update_date,
     type = temp$type,
     platform_id = temp$platform_id,
     platform_name = gpl@header$title,
-    pubmed_id = temp$pubmed_id,
+    pubmed_id = pubmed.id,
     sra_id = stringr::str_extract(string = temp$relation,
                          pattern = "SRP[0-9]*"))
 
