@@ -178,29 +178,12 @@ prepare_array_data <- function(
     stop("array.type needs to be 'affy', 'agilent' or 'illumina'")
   }
 
-  ## get SCAN normalized expression data
-  expr = get_expr_data(
-    study.id = study.id,
-    pheno = pheno,
-    type = "expr",
-    array.type = array.type,
-    temp.dir = temp.dir,
-    platform = platform)
-
-  ## get UPC values
-  upc = get_expr_data(
-    study.id = study.id,
-    pheno = pheno,
-    type = "upc",
-    array.type = array.type,
-    temp.dir = temp.dir,
-    platform = platform)
-
-  if (any(rownames(expr) != rownames(upc))) {
-    stop("some rownames in expr and upc do not match")
+  if (array.type == "affy") {
+    assays = get_expr_data_affy(
+      study.id = study.id,
+      pheno = pheno,
+      temp.dir = temp.dir)
   }
-
-  assays = list(expr = expr, upc = upc)
   return(assays)
 }
 
@@ -211,86 +194,86 @@ prepare_array_data <- function(
 #' Use specific functions for each array type.
 #'
 #' @keywords internal
-get_expr_data <- function(
-  study.id,
-  pheno,
-  type = "expr",
-  array.type = "affy",
-  platform = "illuminaHumanv4",
-  temp.dir = tempdir()) {
-
-  if (type == "expr") {
-    file.name = file.path(
-      temp.dir,
-      paste0(study.id, "_norm_scan.txt"))
-  } else if (type == "upc") {
-    file.name = file.path(
-      temp.dir,
-      paste0(study.id, "_upc.txt"))
-  } else {
-    stop(paste("type", type, "unknown"))
-  }
-
-  # if (array.type == "agilent") {
-  #   if (!file.exists(file.name)) {
-  #     if (type == "expr") {
-  #       print("running SCAN normalization ...")
-  #       eset = SCAN_TwoColor(gse,
-  #                            outFilePath = file.name)
-  #     } else if (type == "upc") {
-  #       print("running UPC ...")
-  #       eset = UPC_TwoColor(gse,
-  #                           outFilePath = file.name)
-  #     }
-  #   }
-  #   dat = as.matrix(utils::read.table(file = file.name))
-  #
-  #   ## keep only channel 1
-  #   dat = dat[, grepl("Channel1$", colnames(dat))]
-  #
-  #   ## set colnames to GSM
-  #   colnames(dat) = sapply(colnames(dat), function(x) {
-  #     unlist(strsplit(x, "_"))[1]
-  #   })
-  #
-  # } else if (array.type == "affy") {
-    if (!file.exists(file.name)) {
-      run_norm_scan_affy(study.id = study.id,
-                         pheno = pheno,
-                         type = type,
-                         temp.dir = temp.dir,
-                         file.name = file.name)
-    }
-    dat = as.matrix(utils::read.table(file = file.name))
-
-  # } else if (array.type == "illumina") {
-  #   if (!file.exists(file.name)) {
-  #     run_norm_scan_illumina(gse = gse,
-  #                            expr.dir = expr.dir,
-  #                            type = type,
-  #                            res.file = file.name,
-  #                            platform = platform,
-  #                            numCores = 1)
-  #   }
-  #   dat = utils::read.table(file = file.name,
-  #                    header = TRUE,
-  #                    as.is = TRUE,
-  #                    check.names = FALSE,
-  #                    sep = "\t")
-  #   dat = as.matrix(dat)
-  #
-  # }
-
-  # if (array.type != "illumina") {
-  #   if (!all(rownames(pheno) %in% colnames(dat))) {
-  #     stop(paste("data for some subjects is missing in", gse))
-  #   }
-  #
-  #   dat = dat[, rownames(pheno)]
-  #
-  # }
-  return(dat)
-}
+# get_expr_data <- function(
+#   study.id,
+#   pheno,
+#   type = "expr",
+#   array.type = "affy",
+#   platform = "illuminaHumanv4",
+#   temp.dir = tempdir()) {
+#
+#   if (type == "expr") {
+#     file.name = file.path(
+#       temp.dir,
+#       paste0(study.id, "_norm_scan.txt"))
+#   } else if (type == "upc") {
+#     file.name = file.path(
+#       temp.dir,
+#       paste0(study.id, "_upc.txt"))
+#   } else {
+#     stop(paste("type", type, "unknown"))
+#   }
+#
+#   # if (array.type == "agilent") {
+#   #   if (!file.exists(file.name)) {
+#   #     if (type == "expr") {
+#   #       print("running SCAN normalization ...")
+#   #       eset = SCAN_TwoColor(gse,
+#   #                            outFilePath = file.name)
+#   #     } else if (type == "upc") {
+#   #       print("running UPC ...")
+#   #       eset = UPC_TwoColor(gse,
+#   #                           outFilePath = file.name)
+#   #     }
+#   #   }
+#   #   dat = as.matrix(utils::read.table(file = file.name))
+#   #
+#   #   ## keep only channel 1
+#   #   dat = dat[, grepl("Channel1$", colnames(dat))]
+#   #
+#   #   ## set colnames to GSM
+#   #   colnames(dat) = sapply(colnames(dat), function(x) {
+#   #     unlist(strsplit(x, "_"))[1]
+#   #   })
+#   #
+#   # } else if (array.type == "affy") {
+#     if (!file.exists(file.name)) {
+#       run_norm_scan_affy(study.id = study.id,
+#                          pheno = pheno,
+#                          type = type,
+#                          temp.dir = temp.dir,
+#                          file.name = file.name)
+#     }
+#     dat = as.matrix(utils::read.table(file = file.name))
+#
+#   # } else if (array.type == "illumina") {
+#   #   if (!file.exists(file.name)) {
+#   #     run_norm_scan_illumina(gse = gse,
+#   #                            expr.dir = expr.dir,
+#   #                            type = type,
+#   #                            res.file = file.name,
+#   #                            platform = platform,
+#   #                            numCores = 1)
+#   #   }
+#   #   dat = utils::read.table(file = file.name,
+#   #                    header = TRUE,
+#   #                    as.is = TRUE,
+#   #                    check.names = FALSE,
+#   #                    sep = "\t")
+#   #   dat = as.matrix(dat)
+#   #
+#   # }
+#
+#   # if (array.type != "illumina") {
+#   #   if (!all(rownames(pheno) %in% colnames(dat))) {
+#   #     stop(paste("data for some subjects is missing in", gse))
+#   #   }
+#   #
+#   #   dat = dat[, rownames(pheno)]
+#   #
+#   # }
+#   return(dat)
+# }
 
 
 # ## calling SCANfast with GSE identifier does not work for some studies (e.g. GSE102725)
@@ -298,16 +281,14 @@ get_expr_data <- function(
 #' Download and normalize CEL files (Affy)
 #'
 #' For each sample download and normalize CEL file using BrainArray annotation
-#' for which relevant package will be installed. Keep only genes with Ensembl
-#' gene identifier and remove suffix '_at'.
+#' for which the relevant package will be installed. Keep only genes with
+#' Ensembl gene identifier and remove suffix '_at'.
 #'
 #' @keywords internal
-run_norm_scan_affy <- function(
+get_expr_data_affy <- function(
   study.id,
   pheno,
-  type,
-  temp.dir = tempdir(),
-  file.name) {
+  temp.dir = tempdir()) {
 
   ## get sample ids
   col.ids = "geo_accession"
@@ -324,67 +305,132 @@ run_norm_scan_affy <- function(
   }
   sample.ids = pheno[, col.ids]
 
-  res.all = NULL
-  pkg.name = NULL
+  ## probe mapping from BrainArray
+  cel.file = download_cel_file_GEO(
+    sample = sample.ids[1],
+    temp.dir = temp.dir)
+  pkg.name = check_annotation_package(
+    cel.file = cel.file,
+    temp.dir = temp.dir)
+
+  expr = upc = NULL
   for (s in sample.ids) {
-    sample.file = file.path(temp.dir,
-                            paste0(s, "_", type, ".txt"))
 
     ## download CEL file
-    if (grepl("GSE", study.id)) {
-      cel.file = download_cel_file_GEO(
-        sample = s,
-        temp.dir = temp.dir)
-    }
+    cel.file = download_cel_file_GEO(
+      sample = s,
+      temp.dir = temp.dir)
 
-    if (is.null(pkg.name) & s == sample.ids[1]) {
-      pkg.name = SCAN.UPC::InstallBrainArrayPackage(
-        celFilePath = cel.file,
-        version = "25.0.0",
-        organism = "hs",
-        annotationSource = "ensg")
-    }
+    ## get normalized expression and UPC
+    e = norm_scan_affy_sample(
+      cel.file = cel.file,
+      type = "expr",
+      pkg.name = pkg.name,
+      temp.dir = temp.dir)
+    u = norm_scan_affy_sample(
+      cel.file = cel.file,
+      type = "upc",
+      pkg.name = pkg.name,
+      temp.dir = temp.dir)
 
-    if (!file.exists(sample.file)) {
-      if (type == "expr") {
-        temp = SCAN.UPC::SCANfast(
-          celFilePattern = cel.file,
-          probeSummaryPackage = pkg.name,
-          outFilePath = sample.file)
-      } else if (type == "upc") {
-        temp = SCAN.UPC::UPCfast(
-          celFilePattern = cel.file,
-          probeSummaryPackage = pkg.name,
-          outFilePath = sample.file)
-      }
-      rm(temp)
-      gc = gc()
-    }
-    res = utils::read.table(sample.file)
-
-    if (is.null(res.all)) {
-      res.all = res
+    if (is.null(expr)) {
+      expr = e
+      upc = u
     } else {
-      if (any(rownames(res.all) != rownames(res))) {
+      if (any(rownames(expr) != rownames(e))) {
         stop(paste("different rownames for sample", sample))
       }
-      res.all = data.frame(res.all, res)
+      expr = data.frame(expr, e)
+      upc = data.frame(upc, u)
     }
   }
 
+  ## compare genes
+  if (!all(rownames(expr) == rownames(upc))) {
+    stop("different genes in expr and upc")
+  }
+
   ## rename colnames
-  colnames(res.all) = sample.ids
+  colnames(expr) = colnames(upc) = sample.ids
 
   ## extract and rename Ensembl gene ids
-  res.all = res.all[grepl("^ENSG", rownames(res.all)), ]
-  rownames(res.all) = gsub("_at", "", rownames(res.all))
+  ind.use = grep("^ENSG", rownames(expr))
+  expr = expr[ind.use, ]
+  upc = upc[ind.use, ]
+  rownames(expr) = rownames(upc) = gsub("_at", "", rownames(expr))
 
-  utils::write.table(
-    res.all,
-    sep = "\t",
-    row.names = TRUE,
-    col.names = TRUE,
-    quote = FALSE,
-    file = file.name)
+  assays = list(expr = expr, upc = upc)
+  return(assays)
 }
 
+#' Extract BrainArray annotation package from CEL file
+#'
+#' Extract relevant BrainArray annotation package for mapping probes to Ensembl
+#' genes based on header of CEL file. Install package if necessary. Code based
+#' on SCAN.UPC::InstallBrainArrayPackage.
+#'
+#' @keywords internal
+check_annotation_package <- function(
+  cel.file,
+  version = "25.0.0",
+  temp.dir = tempdir()) {
+
+  ## identify package name
+  platform = affy::cleancdfname(
+    cdfname = affyio::read.celfile.header(
+      filename = cel.file,
+      info = "full")$cdfName)
+  platform = sub("cdf", "", platform)
+  platform = sub("stv1", "st", platform)
+  platform = sub("stv2", "st", platform)
+  pkg.name = paste(platform, "hs", "ensg", "probe", sep = "")
+
+  ## install package if needed
+  if (!(pkg.name %in% rownames(utils::installed.packages()))) {
+    print(paste("installing package", pkg.name))
+
+    pkg.file = paste(pkg.name, "_", version, ".tar.gz", sep = "")
+    pkg.file.full = file.path(temp.dir, pkg.file)
+    utils::download.file(
+      url = paste("http://mbni.org/customcdf/",
+                  version,
+                  "/ensg.download/",
+                  pkg.file,
+                  sep = ""),
+      destfile = pkg.file.full)
+
+    utils::install.packages(
+      pkg.file.full,
+      repos = NULL,
+      type = "source")
+  }
+  return(pkg.name)
+}
+
+norm_scan_affy_sample <- function(
+  cel.file,
+  type = "expr",
+  pkg.name,
+  temp.dir = tempdir()) {
+
+  file.name = file.path(
+    temp.dir,
+    paste0(unlist(strsplit(basename(cel.file), "\\."))[1],
+           "_", type, ".txt"))
+
+  if (!file.exists(file.name)) {
+    if (type == "expr") {
+      temp = SCAN.UPC::SCANfast(
+        celFilePattern = cel.file,
+        probeSummaryPackage = pkg.name,
+        outFilePath = file.name)
+    } else if (type == "upc") {
+      temp = SCAN.UPC::UPCfast(
+        celFilePattern = cel.file,
+        probeSummaryPackage = pkg.name,
+        outFilePath = file.name)
+    }
+  }
+  dat = utils::read.table(file.name)
+  return(dat)
+}
