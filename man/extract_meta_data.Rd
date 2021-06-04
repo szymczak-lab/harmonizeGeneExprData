@@ -27,3 +27,6 @@ identifier.
 \details{
 Different meta data information is available at GEO and ArrayExpress.
 }
+\examples{
+meta.data.l = extract_meta_data(study.id = "GSE67785")
+}

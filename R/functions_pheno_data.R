@@ -17,6 +17,12 @@
 #' @return [data.frame] phenotype data for each sample and all variables
 #' provided by GEO or ArrayExpress
 #' @export
+#'
+#' @examples
+#' study.id = "GSE67785"
+#' pheno.original = extract_pheno_data(
+#'   study.id = study.id)
+
 extract_pheno_data <- function(
   study.id,
   temp.dir = tempdir(),
@@ -107,14 +113,44 @@ extract_pheno_data <- function(
 #' @export
 #'
 #' @examples
+#' # example study
+#' study.id = "GSE67785"
+#'
+#' # extract phenotype data from GEO
+#' pheno.original = extract_pheno_data(
+#'   study.id = study.id)
+#'
+#' # prepare information about variables to be harmonized
 #' info.var = list(
-#'   age = list(type = "numeric"),
+#'   lesional = list(
+#'       type = "character",
+#'       values = list(
+#'          lesional = "PP",
+#'          nonlesional = "PN")),
 #'   sex = list(
-#'     type = "character",
-#'     values = list(
-#'       female = c("^f$", "female", "woman"),
-#'       male = c("^m$", "^male", "^man"))
-#'   ))
+#'       type = "character",
+#'       values = list(
+#'          female = "female",
+#'          male = "^male")),
+#'   tissue = list(
+#'       type = "character",
+#'       values = list(skin = "skin")))
+#'
+#' # define columns that should be harmonized
+#' cols.use = c(
+#'   lesional = "group:ch1",
+#'   tissue = "source_name_ch1",
+#'   sex = "gender:ch1")
+#'
+#' pheno = harmonize_pheno_data(
+#'   project = "project",
+#'   pheno = pheno.original,
+#'   info.var = info.var,
+#'   col.id = "patient:ch1",
+#'   cols.use = cols.use)
+#'
+#' head(pheno[, 1:6])
+
 harmonize_pheno_data <- function(
   project,
   pheno,
@@ -354,11 +390,6 @@ convert_time_variable <- function(
   return(x.num)
 }
 
-
-
-
-
-
 #' Extract sample and subject identifiers
 #'
 #' @keywords internal
@@ -422,19 +453,41 @@ extract_subject_id <- function(id,
 #' Check if subject information is consistent across all samples.
 #'
 #' @param pheno [data.frame] harmonized phenotype data
+#' @param col.id [vector(1)] column name with subject identifier (if NULL, the
+#' column name ending on "_id" is used)
 #' @param cols.subject [vector(n)] column names to be used for check
 #'
 #' @export
+#' @examples
+#' # example study
+#' study.id = "GSE67785"
+#'
+#' # extract phenotype data from GEO
+#' pheno.original = extract_pheno_data(
+#'   study.id = study.id)
+#'
+#' check_subject_info(
+#'   pheno = pheno.original,
+#'   col.id = "patient:ch1",
+#'   cols.subject = "gender:ch1")
+
 check_subject_info <- function(pheno,
+                               col.id = NULL,
                                cols.subject) {
 
-  col.id = grep("_id$", colnames(pheno), value = TRUE)
-  col.id = setdiff(col.id, "platform_id")
-  if (length(col.id) == 0) {
-    stop("no subject identifier column found")
-  }
-  if (length(col.id) > 1) {
-    stop("more than one subject identifier column found")
+  if (is.null(col.id)) {
+    col.id = grep("_id$", colnames(pheno), value = TRUE)
+    col.id = setdiff(col.id, "platform_id")
+    if (length(col.id) == 0) {
+      stop("no subject identifier column found")
+    }
+    if (length(col.id) > 1) {
+      stop("more than one subject identifier column found")
+    }
+  } else {
+    if (!(col.id %in% colnames(pheno))) {
+      stop(paste("column", col.id, "not available in pheno"))
+    }
   }
 
   cols.miss = setdiff(

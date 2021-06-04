@@ -28,3 +28,8 @@ identifier.
 All phenotype data available at GEO or ArrayExpress is returned without any
 modifications.
 }
+\examples{
+study.id = "GSE67785"
+pheno.original = extract_pheno_data(
+  study.id = study.id)
+}

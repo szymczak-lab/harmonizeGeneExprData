@@ -4,13 +4,29 @@
 \alias{check_subject_info}
 \title{Check subject level information}
 \usage{
-check_subject_info(pheno, cols.subject)
+check_subject_info(pheno, col.id = NULL, cols.subject)
 }
 \arguments{
 \item{pheno}{[data.frame] harmonized phenotype data}
+
+\item{col.id}{[vector(1)] column name with subject identifier (if NULL, the
+column name ending on "_id" is used)}
 
 \item{cols.subject}{[vector(n)] column names to be used for check}
 }
 \description{
 Check if subject information is consistent across all samples.
+}
+\examples{
+# example study
+study.id = "GSE67785"
+
+# extract phenotype data from GEO
+pheno.original = extract_pheno_data(
+  study.id = study.id)
+
+check_subject_info(
+  pheno = pheno.original,
+  col.id = "patient:ch1",
+  cols.subject = "gender:ch1")
 }

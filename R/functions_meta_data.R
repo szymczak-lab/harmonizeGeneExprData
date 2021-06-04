@@ -15,6 +15,10 @@
 #' @return [list] meta data (content depending on information available at GEO
 #' or ArrayExpress)
 #' @export
+#'
+#' @examples
+#' meta.data.l = extract_meta_data(study.id = "GSE67785")
+
 extract_meta_data <- function(
   study.id,
   temp.dir = tempdir(),

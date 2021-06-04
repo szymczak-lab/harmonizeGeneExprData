@@ -18,6 +18,7 @@ Imports:
     filesstrings,
     GEOquery,
     limma,
+    recount,
     rio,
     stringr,
     SummarizedExperiment

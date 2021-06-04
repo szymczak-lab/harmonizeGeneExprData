@@ -18,3 +18,20 @@ samples in columns}
 Remove genes with only zero counts across samples and perform voom
 transformation (as implemented in \code{\link[limma]{voom}})
 }
+\examples{
+# define temporary directory for storing file from recount
+temp.dir = tempdir()
+
+# get counts from recount
+library(recount)
+download_study(
+  project = "SRP057087",
+  type = "counts-gene",
+  outdir = temp.dir)
+counts = read.table(
+  file.path(temp.dir, "counts_gene.tsv.gz"),
+  header = TRUE,
+  row.names = 29)
+
+assays = prepare_count_data(counts)
+}

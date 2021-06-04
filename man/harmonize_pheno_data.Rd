@@ -57,12 +57,41 @@ mapped (can include regular expressions)
 }
 }
 \examples{
+# example study
+study.id = "GSE67785"
+
+# extract phenotype data from GEO
+pheno.original = extract_pheno_data(
+  study.id = study.id)
+
+# prepare information about variables to be harmonized
 info.var = list(
-  age = list(type = "numeric"),
+  lesional = list(
+      type = "character",
+      values = list(
+         lesional = "PP",
+         nonlesional = "PN")),
   sex = list(
-    type = "character",
-    values = list(
-      female = c("^f$", "female", "woman"),
-      male = c("^m$", "^male", "^man"))
-  ))
+      type = "character",
+      values = list(
+         female = "female",
+         male = "^male")),
+  tissue = list(
+      type = "character",
+      values = list(skin = "skin")))
+
+# define columns that should be harmonized
+cols.use = c(
+  lesional = "group:ch1",
+  tissue = "source_name_ch1",
+  sex = "gender:ch1")
+
+pheno = harmonize_pheno_data(
+  project = "project",
+  pheno = pheno.original,
+  info.var = info.var,
+  col.id = "patient:ch1",
+  cols.use = cols.use)
+
+head(pheno[, 1:6])
 }

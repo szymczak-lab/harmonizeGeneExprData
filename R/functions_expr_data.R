@@ -9,6 +9,24 @@
 #' @return [list] assays (counts, voom and voom.weights) to be used in
 #' \code{\link{make_se_object}}
 #' @export
+#'
+#' @examples
+#' # define temporary directory for storing file from recount
+#' temp.dir = tempdir()
+#'
+#' # get counts from recount
+#' library(recount)
+#' download_study(
+#'   project = "SRP057087",
+#'   type = "counts-gene",
+#'   outdir = temp.dir)
+#' counts = read.table(
+#'   file.path(temp.dir, "counts_gene.tsv.gz"),
+#'   header = TRUE,
+#'   row.names = 29)
+#'
+#' assays = prepare_count_data(counts)
+
 prepare_count_data <- function(counts) {
 
   counts = as.matrix(counts)
@@ -50,6 +68,33 @@ prepare_count_data <- function(counts) {
 #' @return [data.frame or matrix] raw counts with colnames replaced by GSM
 #' identifiers
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' # define temporary directory for storing file from recount
+#' temp.dir = tempdir()
+#'
+#' # get counts from recount
+#' library(recount)
+#' recount::download_study(
+#'   project = "SRP057087",
+#'   type = "counts-gene",
+#'   outdir = temp.dir)
+#' counts = read.table(
+#'   file.path(temp.dir, "counts_gene.tsv.gz"),
+#'   header = TRUE,
+#'   row.names = 29)
+#'
+#' # mapping
+#' counts.new = SRR_2_GSM(
+#'   counts = counts,
+#'   global.mapping.file = system.file(
+#'     "extdata",
+#'     "SRA_Accessions_example.tab",
+#'     package = "harmonizeGeneExprData"),
+#'   study.mapping.file = file.path(temp.dir, "mapping.rds"))
+#'   }
+
 SRR_2_GSM <- function(
   counts,
   global.mapping.file,
@@ -59,6 +104,9 @@ SRR_2_GSM <- function(
     print("using existing file ...")
     info = readRDS(study.mapping.file)
   } else {
+    if (!file.exists(global.mapping.file)) {
+      stop(paste("global.mapping.file", global.mapping.file, "does not exist"))
+    }
     print("extracting mapping ...")
     info = NULL
     for (s in colnames(counts)) {

@@ -31,3 +31,29 @@ https://ftp.ncbi.nlm.nih.gov/sra/reports/Metadata/SRA_Accessions.tab
 If study.mapping.file exists, it will be loaded without repeating the
 extraction process.
 }
+\examples{
+\dontrun{
+# define temporary directory for storing file from recount
+temp.dir = tempdir()
+
+# get counts from recount
+library(recount)
+recount::download_study(
+  project = "SRP057087",
+  type = "counts-gene",
+  outdir = temp.dir)
+counts = read.table(
+  file.path(temp.dir, "counts_gene.tsv.gz"),
+  header = TRUE,
+  row.names = 29)
+
+# mapping
+counts.new = SRR_2_GSM(
+  counts = counts,
+  global.mapping.file = system.file(
+    "extdata",
+    "SRA_Accessions_example.tab",
+    package = "harmonizeGeneExprData"),
+  study.mapping.file = file.path(temp.dir, "mapping.rds"))
+  }
+}
