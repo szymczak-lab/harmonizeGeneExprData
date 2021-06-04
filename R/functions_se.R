@@ -9,7 +9,7 @@
 #' @param assays [list] matrices of gene expression data, e.g. raw and voom
 #' transformed counts for RNAseq (as prepared by
 #' \code{\link{prepare_count_data}})) or raw and SCAN normalized expression
-#' values for array data
+#' values for array data (as prepared by \code{\link{prepare_array_data}}))
 #' @param anno [data.frame] gene annotation (e.g. gene identifier, chromosomal
 #' position, gene names) with genes in rows and information in columns
 #'
@@ -49,6 +49,8 @@ make_se_object <- function(
     }
 
     anno = anno[genes.use, ]
+  } else {
+    genes.use = rownames(assays[[1]])
   }
 
   ## extract genes and samples

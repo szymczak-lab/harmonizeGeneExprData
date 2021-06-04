@@ -147,3 +147,41 @@ extract_meta_data_GEO <- function(
 
   return(meta.data.l)
 }
+
+#' Download CEL file (Affy) from GEO
+#'
+#' @keywords internal
+download_cel_file_GEO <- function(
+  sample,
+  temp.dir = tempdir()) {
+
+  info.cel.file = NULL
+  #  count = 0
+  #  while (is.null(info.cel.file)) {
+  #    if (count > 0 && count %% 10 == 0) {
+  #      print(count/10)
+  #    }
+  info.cel.file = GEOquery::getGEOSuppFiles(
+    GEO = sample,
+    makeDirectory = FALSE,
+    baseDir = temp.dir,
+    fetch_files = FALSE,
+    filter_regex = "CEL|cel")
+  #    count = count + 1
+  #  }
+  if (nrow(info.cel.file) > 1) {
+    stop(paste("more than one CEL file found for sample", sample))
+  }
+  if (nrow(info.cel.file) == 0) {
+    stop(paste("no CEL file found for sample", sample))
+  }
+
+  cel.file = file.path(temp.dir, info.cel.file$fname)
+  if (!file.exists(cel.file)) {
+    utils::download.file(
+      url = info.cel.file$url,
+      destfile = cel.file)
+  }
+  return(cel.file)
+}
+

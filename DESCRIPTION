@@ -20,5 +20,7 @@ Imports:
     limma,
     recount,
     rio,
+    SCAN.UPC,
     stringr,
-    SummarizedExperiment
+    SummarizedExperiment,
+    utils
