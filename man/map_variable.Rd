@@ -4,7 +4,7 @@
 \alias{map_variable}
 \title{Harmonize values of a character variable}
 \usage{
-map_variable(x, values)
+map_variable(x, values, priority = NULL)
 }
 \description{
 Map values of a character variable to pre-specified values. Print table of

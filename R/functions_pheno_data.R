@@ -64,13 +64,14 @@ extract_pheno_data <- function(
   }
 
   ## other values for NA
-  na.strings = c("NA", "N/A",
+  na.strings = c("^NA$", "^N/A$",
                  "unknown",
                  "not reported")
   for (c in 1:ncol(pheno.all)) {
     pheno.all[grepl(
       paste(na.strings, collapse = "|"),
-      pheno.all[, c]), c] = NA
+      pheno.all[, c],
+      ignore.case = TRUE), c] = NA
   }
 
   return(pheno.all)
@@ -187,7 +188,8 @@ harmonize_pheno_data <- function(
       if (!is.null(info$values)) {
         x.new = map_variable(
           x = x,
-          values = info$values)
+          values = info$values,
+          priority = info$priority)
       } else {
         x.new = tolower(gsub(" ", "_", x))
       }
@@ -266,7 +268,8 @@ harmonize_pheno_data <- function(
 #' @keywords internal
 map_variable <- function(
   x,
-  values) {
+  values,
+  priority = NULL) {
 
   ## mapping to each category
   info.map = sapply(
@@ -276,7 +279,19 @@ map_variable <- function(
     })
   info.map[which(is.na(x)), ] = NA
 
-  ## check that mapping is unique
+  ## modify based on priority
+  if (!is.null(priority)) {
+    if (!all(priority %in% names(values))) {
+      stop("values of priority need to be contained in names of values")
+    }
+    for (p in priority) {
+      c = which(colnames(info.map) == p)
+      ind = which(info.map[, c])
+      info.map[ind, -c] = FALSE
+    }
+  }
+
+  ## check that all terms are mapped
   sum = apply(info.map, 1, sum)
   if (all(sum == 0)) {
     print("none of the values could be mapped:")
@@ -289,6 +304,8 @@ map_variable <- function(
     print(sort(unique(x[which(sum == 0)])))
     stop()
   }
+
+  ## check that mapping is unique
   if (any(sum > 1, na.rm = TRUE)) {
     print("the following values were not uniquely mapped:")
     print(sort(unique(x[which(sum > 1)])))
