@@ -206,30 +206,18 @@ harmonize_pheno_data <- function(
 
   ## add information about age group
   if ("age" %in% colnames(new)) {
-    new$age_group = ifelse(
+    age_group = ifelse(
       is.numeric(new$age),
       ifelse(new$age >= 18, "adult", "pediatric"),
       NA)
+  } else {
+    age_group = rep(NA, nrow(new))
   }
+  new$age_group = age_group
 
   ## add information about disease
   if (!is.null(disease)) {
     new$disease = rep(disease, nrow(new))
-  }
-
-  ## set lesional to "healthy_control" for controls
-  if ("lesional" %in% colnames(new) &
-      "disease" %in% colnames(new)) {
-    ind.ctrl = which(new$disease == "healthy_control")
-    new$lesional[ind.ctrl] = "healthy_control"
-  }
-
-  ## set tissue to skin if only information about lesional is available
-  if ("lesional" %in% colnames(new) &
-      !("tissue" %in% colnames(new))) {
-    tissue = rep(NA, nrow(new))
-    tissue[grepl("lesional", new$lesional)] = "skin"
-    new$tissue = tissue
   }
 
   ## add columns without information
@@ -423,6 +411,7 @@ extract_identifier <- function(
   } else if ("Source.Name" %in% colnames(pheno)) { ## AE
     info = pheno[, c("Source.Name"), drop = FALSE]
     colnames(info) = "accession"
+    info$name = info$accession
   }
 
   ## check if sample identifiers are unique
