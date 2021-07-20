@@ -31,6 +31,13 @@ prepare_count_data <- function(counts) {
 
   counts = as.matrix(counts)
 
+  ## set missing and negative counts to 0
+  ind = which(is.na(counts) | counts < 0)
+  if (length(ind) > 0) {
+    warning("Missing or negative counts set to 0")
+    counts[ind] = 0
+  }
+
   ## remove genes with only zero counts
   total = rowSums(counts)
   counts = counts[total > 0, ]
