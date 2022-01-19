@@ -20,6 +20,7 @@ Imports:
     filesstrings,
     GEOquery,
     limma,
+    methods,
     recount,
     rio,
     SCAN.UPC,

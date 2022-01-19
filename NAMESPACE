@@ -2,8 +2,10 @@
 
 export(SRR_2_GSM)
 export(check_subject_info)
+export(define_batches)
 export(extract_meta_data)
 export(extract_pheno_data)
+export(extract_scan_date)
 export(harmonize_pheno_data)
 export(make_se_object)
 export(prepare_array_data)
