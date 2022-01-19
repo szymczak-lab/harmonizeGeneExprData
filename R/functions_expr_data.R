@@ -313,7 +313,7 @@ get_expr_data_affy <- function(
   sample.ids = pheno[, col.ids]
 
   ## probe mapping from BrainArray
-  cel.file = download_cel_file_GEO(
+  cel.file = download_cel_file(
     sample = sample.ids[1],
     temp.dir = temp.dir)
   pkg.name = check_annotation_package(
@@ -324,7 +324,7 @@ get_expr_data_affy <- function(
   for (s in sample.ids) {
 
     ## download CEL file
-    cel.file = download_cel_file_GEO(
+    cel.file = download_cel_file(
       sample = s,
       temp.dir = temp.dir)
 
@@ -369,6 +369,25 @@ get_expr_data_affy <- function(
   assays = list(expr = expr, upc = upc)
   return(assays)
 }
+
+#' Download CEL file (Affy) from ArrayExpress or GEO
+#'
+#' @keywords internal
+download_cel_file <- function(
+  sample,
+  temp.dir = tempdir()) {
+
+  if (grepl("^GSM", sample)) {
+    download_cel_file_GEO(
+      sample = sample,
+      temp.dir = temp.dir)
+  } else {
+    download_cel_file_AE(
+      sample = sample,
+      temp.dir = temp.dir)
+  }
+}
+
 
 #' Extract BrainArray annotation package from CEL file
 #'

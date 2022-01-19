@@ -107,3 +107,28 @@ extract_info_from_idf <- function(idf, label) {
            paste(l[-1], collapse = "|")))
   return(final)
 }
+
+#' Download CEL file (Affy) from ArrayExpress
+#'
+#' @keywords internal
+download_cel_file_AE <- function(
+  sample,
+  temp.dir = tempdir()) {
+
+  cel.file = file.path(temp.dir, paste0(sample, ".CEL"))
+
+  if (!file.exists(cel.file)) {
+    ## download raw data (all and unzip)
+    info.ae = ArrayExpress::getAE(
+      accession = sample,
+      path = temp.dir,
+      type = "raw")
+
+    if (!file.exists(cel.file)) {
+      stop(paste("no CEL file found for sample", sample))
+    }
+  }
+
+  return(cel.file)
+}
+
