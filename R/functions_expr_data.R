@@ -10,6 +10,8 @@
 #' \code{\link{make_se_object}}
 #' @export
 #'
+#' @importFrom recount download_study
+#'
 #' @examples
 #' # define temporary directory for storing file from recount
 #' temp.dir = tempdir()

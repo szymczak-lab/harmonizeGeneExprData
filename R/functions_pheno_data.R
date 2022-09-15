@@ -240,6 +240,28 @@ harmonize_pheno_data <- function(
     info.id,
     new,
     stringsAsFactors = FALSE)
+
+  ## add information about visit number
+  visit = rep(1, nrow(new))
+  if (!all(is.na(new$time_since_baseline))) {
+    tab = table(new$time_since_baseline)
+    visit = sapply(
+      new$time_since_baseline,
+      function(x) {
+        ifelse(is.na(x), NA,
+               which(names(tab) == x))})
+  }
+  new = data.frame(
+    new,
+    visit,
+    stringsAsFactors = FALSE)
+
+  if ("time_since_baseline" %in% cols.use) {
+    print("===========================================")
+    print("visit")
+    print(table(new$visit, new$time_since_baseline))
+  }
+
   colnames(new) = paste(project, colnames(new), sep = "_")
 
   ## combine
