@@ -129,7 +129,13 @@ define_batches <- function(
   scan.date = sort(scan.date)
   diff = c(0, as.numeric(diff(scan.date)))
   diff[diff == diff.ignore] = 0
-  batch = as.numeric(as.factor(cumsum(diff)))
+  batch.num = as.numeric(as.factor(cumsum(diff)))
+  ## add leading zeros to enable numeric sorting of strings
+  batch = formatC(
+    batch.num,
+    width = max(nchar(batch.num)),
+    format = "d",
+    flag = "0")
   names(batch) = names(scan.date)
   se$batch = batch[colnames(se)]
   return(se)
