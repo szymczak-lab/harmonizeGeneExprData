@@ -169,10 +169,12 @@ SRR_2_GSM <- function(
 #' or "illumina")
 #' @param platform [character(1)] array platform (needs to be specified for
 #' Illumina arrays (?))
+#' @param use.upc [logical(1)] should UPC information be calculated (default:
+#' FALSE)?
 #' @param temp.dir [character(1)] directory where temporary files should be
 #' stored
 #'
-#' @return [list] assays (expr and upc) to be used in
+#' @return [list] assays (expr, upc) to be used in
 #' \code{\link{make_se_object}}
 #' @export
 
@@ -181,6 +183,7 @@ prepare_array_data <- function(
   pheno,
   array.type = "affy",
   platform = NULL,
+  use.upc = FALSE,
   temp.dir = tempdir()) {
 
   if (!(array.type %in% c("affy", "agilent", "illumina"))) {
@@ -191,6 +194,7 @@ prepare_array_data <- function(
     assays = get_expr_data_affy(
       study.id = study.id,
       pheno = pheno,
+      use.upc = use.upc,
       temp.dir = temp.dir)
   }
   return(assays)
@@ -297,6 +301,7 @@ prepare_array_data <- function(
 get_expr_data_affy <- function(
   study.id,
   pheno,
+  use.upc = FALSE,
   temp.dir = tempdir()) {
 
   ## get sample ids
@@ -336,11 +341,15 @@ get_expr_data_affy <- function(
       type = "expr",
       pkg.name = pkg.name,
       temp.dir = temp.dir)
-    u = norm_scan_affy_sample(
-      cel.file = cel.file,
-      type = "upc",
-      pkg.name = pkg.name,
-      temp.dir = temp.dir)
+    if (use.upc) {
+      u = norm_scan_affy_sample(
+        cel.file = cel.file,
+        type = "upc",
+        pkg.name = pkg.name,
+        temp.dir = temp.dir)
+    } else {
+      u = NULL
+    }
 
     if (is.null(expr)) {
       expr = e
@@ -360,15 +369,25 @@ get_expr_data_affy <- function(
   }
 
   ## rename colnames
-  colnames(expr) = colnames(upc) = sample.ids
+  colnames(expr)  = sample.ids
+  if (ncol(upc) != 0) {
+    colnames(upc) = sample.ids
+  }
 
   ## extract and rename Ensembl gene ids
   ind.use = grep("^ENSG", rownames(expr))
   expr = expr[ind.use, ]
-  upc = upc[ind.use, ]
-  rownames(expr) = rownames(upc) = gsub("_at", "", rownames(expr))
+  rownames(expr) = gsub("_at", "", rownames(expr))
+  if (ncol(upc) != 0) {
+    upc = upc[ind.use, ]
+    rownames(upc) = gsub("_at", "", rownames(expr))
+  }
 
-  assays = list(expr = expr, upc = upc)
+  if (ncol(upc) != 0) {
+    assays = list(expr = expr, upc = upc)
+  } else {
+    assays = list(expr = expr)
+  }
   return(assays)
 }
 

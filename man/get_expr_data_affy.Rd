@@ -4,7 +4,7 @@
 \alias{get_expr_data_affy}
 \title{Download and normalize raw array data}
 \usage{
-get_expr_data_affy(study.id, pheno, temp.dir = tempdir())
+get_expr_data_affy(study.id, pheno, use.upc = FALSE, temp.dir = tempdir())
 }
 \description{
 Use specific functions for each array type.

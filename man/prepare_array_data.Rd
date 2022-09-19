@@ -9,6 +9,7 @@ prepare_array_data(
   pheno,
   array.type = "affy",
   platform = NULL,
+  use.upc = FALSE,
   temp.dir = tempdir()
 )
 }
@@ -25,11 +26,14 @@ or "illumina")}
 \item{platform}{[character(1)] array platform (needs to be specified for
 Illumina arrays (?))}
 
+\item{use.upc}{[logical(1)] should UPC information be calculated (default:
+FALSE)?}
+
 \item{temp.dir}{[character(1)] directory where temporary files should be
 stored}
 }
 \value{
-[list] assays (expr and upc) to be used in
+[list] assays (expr, upc) to be used in
 \code{\link{make_se_object}}
 }
 \description{
