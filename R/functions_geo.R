@@ -97,7 +97,9 @@ extract_meta_data_GEO <- function(
     platform = platform,
     temp.dir = temp.dir)
   if (is.null(platform)) platform = unique(eset$platform_id)
-  gpl = GEOquery::getGEO(platform)
+  gpl = GEOquery::getGEO(
+    GEO = platform,
+    destdir = temp.dir)
 
   temp = Biobase::experimentData(eset)@other
 
