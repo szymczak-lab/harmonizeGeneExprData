@@ -206,12 +206,13 @@ harmonize_pheno_data <- function(
 
   ## add information about age group
   if ("age" %in% colnames(new)) {
-    age_group = ifelse(
-      is.numeric(new$age),
-      ifelse(new$age >= 18, "adult", "pediatric"),
-      NA)
+    age_group = sapply(new$age, function(x) {
+      ifelse(
+        is.numeric(x),
+        ifelse(x >= 18, "adult", "pediatric"),
+        NA)})
   } else {
-    age_group = rep(NA, nrow(new))
+    age_group = rep(NA, nrow(pheno))
   }
   new$age_group = age_group
 
