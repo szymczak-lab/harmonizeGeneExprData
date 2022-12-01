@@ -545,3 +545,73 @@ check_subject_info <- function(pheno,
     }
   }
 }
+
+#' Calculate time since baseline
+#'
+#' If visit dates are available time since baseline visits (in days) is
+#' calculated.
+#'
+#' @param pheno [data.frame] harmonized phenotype data
+#' @param col.id.sample [vector(1)] column name or number with sample identifier
+#' @param col.id.subject [vector(1)] column name or number with subject
+#' identifier
+#' @param col.date [vector(1)] column name or number with date of sample
+#' collection (needs to be of class Date)
+#' @param col.visit [vector(1)] column name or number with visit number (needs
+#' to be numeric)
+#' @param col.time.diff [character(1)] column name for new variable with time
+#' since baseline
+#'
+#' @export
+
+calculate_time_since_baseline <- function(
+    pheno,
+    col.id.sample,
+    col.id.subject,
+    col.date,
+    col.visit,
+    col.time.diff) {
+
+  if (!all(c(col.id.sample,
+             col.id.subject,
+             col.date,
+             col.visit) %in% colnames(pheno))) {
+    stop("Some variable(s) not available in pheno")
+  }
+
+  if (!methods::is(pheno[, col.date], "Date")) {
+    stop(paste("variable", col.date, "needs to be of class Date"))
+  }
+
+  if (!is.numeric(pheno[, col.visit])) {
+    stop(paste("variable", col.visit, "needs to be numeric"))
+  }
+
+  ids = unique(pheno[, col.id.subject])
+  info.new = NULL
+  for (id in ids) {
+    temp = pheno[which(pheno[, col.id.subject] == id),
+                 c(col.id.sample, col.id.subject, col.date, col.visit)]
+    ind.min = which(temp[, col.visit] == 1)
+    if (length(ind.min) == 0) {
+      diff = rep(NA, nrow(temp))
+    } else {
+      baseline = unique(temp[ind.min, col.date])
+      if (length(baseline) > 1) {
+        stop(paste(
+          "several dates for baseline visit for subject", id))
+      }
+      diff = temp[, col.date] - baseline
+    }
+    info.new = rbind(
+      info.new,
+      data.frame(
+        id = temp[, col.id.sample],
+        diff = as.numeric(diff)))
+  }
+
+  rownames(info.new) = info.new$id
+  pheno[, col.time.diff] = info.new[pheno[, col.id.sample], 2]
+  return(pheno)
+}
+
